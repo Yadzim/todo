@@ -1,21 +1,30 @@
-name: Deploy to Production
+name: Deploy
 
 on:
   push:
     branches:
-      - main # Yoki master, asosiy branchni yozing
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Serverga ulanish va Deploy qilish
+      # 1. Secretlar kelayotganini tekshirish uchun maxsus qadam
+      - name: Secretlarni tekshirish
+        run: |
+          if [ -z "${{ secrets.HOST }}" ]; then echo "❌ HOST secret BO'SH!"; else echo "✅ HOST secret topildi!"; fi
+          if [ -z "${{ secrets.USERNAME }}" ]; then echo "❌ USERNAME secret BO'SH!"; else echo "✅ USERNAME secret topildi!"; fi
+          if [ -z "${{ secrets.SSH_KEY }}" ]; then echo "❌ SSH_KEY secret BO'SH!"; else echo "✅ SSH_KEY secret topildi!"; fi
+
+      # 2. Serverga deploy qilish
+      - name: Deploy to Server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          port: 22
           script: |
             cd /var/www/todo
-            chmod +x deploy.sh
             ./deploy.sh
