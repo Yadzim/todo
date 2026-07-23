@@ -1,25 +1,22 @@
-name: SSH Test
+name: Deploy
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Test SSH
-        uses: appleboy/ssh-action@v1.2.2
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          debug: true
-          capture_stdout: true
           script: |
-            hostname
-            whoami
-            pwd
-            touch /tmp/github-test
-            echo "HELLO FROM SERVER"
+            cd ${{ secrets.PROJECT_PATH }}
+            ./deploy.sh
