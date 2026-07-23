@@ -1,11 +1,74 @@
-- name: Deploy to Server
-  uses: appleboy/ssh-action@v1
-  with:
-    host: ${{ secrets.HOST }}
-    username: ${{ secrets.USERNAME }}
-    key: ${{ secrets.SSH_KEY }}
-    port: ${{ secrets.PORT }}
-    debug: true
-    script: |
-      cd ${{ secrets.PROJECT_PATH }}
-      bash -x ./deploy.sh
+name: 🚀 Deploy Todo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
+          debug: true
+          script_stop: true
+          command_timeout: 30m
+
+          script: |
+            set -euxo pipefail
+
+            echo "=============================="
+            echo "🚀 DEPLOY STARTED"
+            echo "=============================="
+
+            echo ""
+            echo "===== SERVER ====="
+            hostname
+            whoami
+            pwd
+
+            echo ""
+            echo "===== PROJECT PATH ====="
+            echo "${{ secrets.PROJECT_PATH }}"
+
+            echo ""
+            echo "===== PROJECT EXISTS ====="
+            ls -ld ${{ secrets.PROJECT_PATH }}
+
+            echo ""
+            echo "===== ENTER PROJECT ====="
+            cd ${{ secrets.PROJECT_PATH }}
+
+            pwd
+
+            echo ""
+            echo "===== FILES ====="
+            ls -la
+
+            echo ""
+            echo "===== DEPLOY.SH ====="
+            ls -l deploy.sh
+
+            echo ""
+            echo "===== GIT ====="
+            git status
+            git branch
+            git log --oneline -3
+
+            echo ""
+            echo "===== RUN DEPLOY.SH ====="
+
+            bash -x ./deploy.sh
+
+            echo ""
+            echo "=============================="
+            echo "✅ DEPLOY FINISHED"
+            echo "=============================="
