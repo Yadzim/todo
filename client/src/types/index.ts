@@ -29,3 +29,20 @@ export interface AuthResponse {
   access_token: string
   token_type: string
 }
+
+export interface TelegramStatus {
+  connected: boolean
+  bot_username: string | null
+  deep_link: string | null
+  bot_configured: boolean
+}
+
+export interface Reminder {
+  id: number
+  title: string
+  note: string | null
+  remind_at: string
+  is_sent: boolean
+  sent_at: string | null
+  created_at: string
+}

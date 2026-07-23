@@ -13,6 +13,11 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
     ]
+    telegram_bot_token: str = ""
+    telegram_bot_username: str = ""
+    telegram_webhook_secret: str = "focus-telegram-secret"
+    telegram_polling: bool = True
+
 
     class Config:
         env_file = ".env"

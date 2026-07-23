@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import * as todosApi from '../api/todos'
 import { TodoForm } from '../components/TodoForm'
@@ -79,6 +80,13 @@ export function TodosPage() {
           </span>
           <span className="brand-name">Focus</span>
         </div>
+
+        <nav className="main-nav">
+          <Link to="/" className="active">
+            Vazifalar
+          </Link>
+          <Link to="/reminders">Eslatmalar</Link>
+        </nav>
 
         <div className="user-chip">
           <span className="user-email" title={user?.email}>

@@ -1,3 +1,3 @@
-from app.routers import auth, todos
+from app.routers import auth, reminders, telegram, todos
 
-__all__ = ["auth", "todos"]
+__all__ = ["auth", "todos", "telegram", "reminders"]
