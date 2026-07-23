@@ -7,6 +7,7 @@ import { TodosPage } from './pages/TodosPage'
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth()
 
+
   if (loading) {
     return (
       <div className="boot-screen">
