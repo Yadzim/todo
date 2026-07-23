@@ -10,26 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Debug and Deploy
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: 169.58.30.176
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          port: 22
-          debug: true # <--- Plaginning barcha ichki ulanish sirlarini fosh qiladi
-          script_stop: true # <--- Agar bitta komanda xato bersa ham jarayonni qizil qilib to'xtatadi
-          script: |
-            echo "--- 1. Men kimman va qayerdaman? ---"
-            whoami
-            pwd
+      - name: SSH Super Debug qadami
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
-            echo "--- 2. Papka ichida nimalar bor? ---"
-            cd /var/www/todo
-            ls -la
-
-            echo "--- 3. deploy.sh fayli joyidami? ---"
-            cat deploy.sh
-
-            echo "--- 4. Skriptni BASH orqali ishga tushirish ---"
-            bash ./deploy.sh
+          echo "--- SSH ULANISH JARAYONINI KUZATAMIZ ---"
+          # -vvv bayrog'i server nima uchun javob bermayotganini fosh qiladi
+          ssh -vvv -o StrictHostKeyChecking=no dev@169.58.30.176 "echo 'TEST-SUCCESS' && whoami"
