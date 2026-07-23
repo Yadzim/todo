@@ -30,6 +30,27 @@ export interface AuthResponse {
   token_type: string
 }
 
+export interface TelegramLoginRequestResult {
+  message: string
+  expires_at: string
+  expires_in: number
+}
+
+export interface TelegramPairCreateResult {
+  session_id: string
+  code: string
+  expires_at: string
+  expires_in: number
+  bot_username: string | null
+  bot_link: string | null
+}
+
+export interface TelegramPairStatusResult {
+  status: 'pending' | 'confirmed' | 'expired' | 'consumed'
+  access_token?: string | null
+  token_type?: string | null
+}
+
 export interface TelegramStatus {
   connected: boolean
   bot_username: string | null

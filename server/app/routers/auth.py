@@ -6,15 +6,19 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.core.deps import get_current_user
 from app.core.security import create_access_token, hash_password, verify_password
 from app.database import get_db
 from app.models.login_code import TelegramLoginCode
+from app.models.pair_session import TelegramPairSession
 from app.models.user import User
 from app.schemas.user import (
     TelegramLoginRequest,
     TelegramLoginRequestOut,
     TelegramLoginVerify,
+    TelegramPairCreateOut,
+    TelegramPairStatusOut,
     Token,
     UserCreate,
     UserOut,
@@ -23,7 +27,13 @@ from app.services.telegram import bot_configured, send_message
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-LOGIN_CODE_TTL_MINUTES = 5
+LOGIN_CODE_TTL_MINUTES = 2
+PAIR_CODE_TTL_MINUTES = 2
+PAIR_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
+def _generate_pair_code() -> str:
+    return "".join(secrets.choice(PAIR_CODE_ALPHABET) for _ in range(8))
 
 
 @router.post("/register", response_model=UserOut, status_code=status.HTTP_201_CREATED)
@@ -85,7 +95,6 @@ async def request_telegram_login(
     code = f"{secrets.randbelow(1_000_000):06d}"
     expires_at = datetime.now(UTC) + timedelta(minutes=LOGIN_CODE_TTL_MINUTES)
 
-    # Eski kodlarni bekor qilamiz.
     db.execute(
         update(TelegramLoginCode)
         .where(TelegramLoginCode.user_id == user.id, TelegramLoginCode.used.is_(False))
@@ -107,7 +116,11 @@ async def request_telegram_login(
             detail="Kod Telegramga yuborilmadi. Keyinroq urinib ko‘ring.",
         )
 
-    return TelegramLoginRequestOut(message="Tasdiqlash kodi Telegram botiga yuborildi")
+    return TelegramLoginRequestOut(
+        message="Tasdiqlash kodi Telegram botiga yuborildi",
+        expires_at=expires_at,
+        expires_in=LOGIN_CODE_TTL_MINUTES * 60,
+    )
 
 
 @router.post("/telegram/verify", response_model=Token)
@@ -139,6 +152,68 @@ def verify_telegram_login(
     record.used = True
     db.commit()
     return Token(access_token=create_access_token(user.id))
+
+
+@router.post("/telegram/pair", response_model=TelegramPairCreateOut)
+def create_telegram_pair(db: Session = Depends(get_db)) -> TelegramPairCreateOut:
+    if not bot_configured():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Telegram bot sozlanmagan",
+        )
+
+    expires_at = datetime.now(UTC) + timedelta(minutes=PAIR_CODE_TTL_MINUTES)
+    code = _generate_pair_code()
+    # Collision juda kam, lekin unique bo‘lishi uchun bir necha urinish.
+    for _ in range(5):
+        exists = db.scalar(select(TelegramPairSession.id).where(TelegramPairSession.code == code))
+        if not exists:
+            break
+        code = _generate_pair_code()
+
+    session = TelegramPairSession(code=code, expires_at=expires_at)
+    db.add(session)
+    db.commit()
+    db.refresh(session)
+
+    username = settings.telegram_bot_username.lstrip("@") if settings.telegram_bot_username else None
+    return TelegramPairCreateOut(
+        session_id=session.id,
+        code=session.code,
+        expires_at=expires_at,
+        expires_in=PAIR_CODE_TTL_MINUTES * 60,
+        bot_username=username,
+        bot_link=f"https://t.me/{username}" if username else None,
+    )
+
+
+@router.get("/telegram/pair/{session_id}", response_model=TelegramPairStatusOut)
+def get_telegram_pair_status(session_id: str, db: Session = Depends(get_db)) -> TelegramPairStatusOut:
+    session = db.get(TelegramPairSession, session_id)
+    if not session:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Sessiya topilmadi")
+
+    now = datetime.now(UTC)
+    expires = session.expires_at
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=UTC)
+
+    if session.consumed:
+        return TelegramPairStatusOut(status="consumed")
+
+    if not session.confirmed and expires < now:
+        return TelegramPairStatusOut(status="expired")
+
+    if not session.confirmed:
+        return TelegramPairStatusOut(status="pending")
+
+    if not session.user_id:
+        return TelegramPairStatusOut(status="pending")
+
+    token = create_access_token(session.user_id)
+    session.consumed = True
+    db.commit()
+    return TelegramPairStatusOut(status="confirmed", access_token=token, token_type="bearer")
 
 
 @router.get("/me", response_model=UserOut)

@@ -38,8 +38,25 @@ class TelegramLoginRequest(BaseModel):
 
 class TelegramLoginVerify(BaseModel):
     email: EmailStr
-    code: str = Field(min_length=4, max_length=8)
+    code: str = Field(min_length=6, max_length=6, pattern=r"^\d{6}$")
 
 
 class TelegramLoginRequestOut(BaseModel):
     message: str
+    expires_at: datetime
+    expires_in: int
+
+
+class TelegramPairCreateOut(BaseModel):
+    session_id: str
+    code: str
+    expires_at: datetime
+    expires_in: int
+    bot_username: str | None = None
+    bot_link: str | None = None
+
+
+class TelegramPairStatusOut(BaseModel):
+    status: str
+    access_token: str | None = None
+    token_type: str | None = None

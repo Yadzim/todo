@@ -158,6 +158,130 @@ a {
   margin-top: -0.25rem;
 }
 
+.otp-block {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.otp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.otp-header > span:first-child {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.otp-timer {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--teal-deep);
+  letter-spacing: 0.02em;
+}
+
+.otp-timer.is-expired {
+  color: var(--danger);
+  font-weight: 600;
+}
+
+.otp-input {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.otp-box {
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.95);
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.otp-box:focus {
+  border-color: rgba(15, 118, 110, 0.45);
+  box-shadow: 0 0 0 4px rgba(94, 234, 212, 0.35);
+}
+
+.otp-box:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bot-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  padding: 0.25rem;
+  border-radius: 12px;
+  background: rgba(12, 31, 28, 0.05);
+}
+
+.bot-methods button {
+  padding: 0.55rem 0.5rem;
+  border-radius: 9px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--muted);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bot-methods button.active {
+  background: var(--surface-strong);
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(12, 31, 28, 0.08);
+}
+
+.pair-block {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.pair-code {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 6vw, 2rem);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-align: center;
+  padding: 1rem 0.75rem;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid var(--line);
+  color: var(--ink);
+  user-select: all;
+}
+
+.pair-waiting {
+  margin: 0;
+  text-align: center;
+  color: var(--teal-deep);
+  font-size: 0.9rem;
+  font-weight: 600;
+  animation: pulse-soft 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* ——— boot ——— */
 
 .boot-screen {
