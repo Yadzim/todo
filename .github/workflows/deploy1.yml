@@ -10,29 +10,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Secretlar kelayotganini tekshirish uchun maxsus qadam
-      - name: Secretlarni tekshirish
-        run: |
-          if [ -z "${{ secrets.HOST }}" ]; then echo "❌ HOST secret BO'SH!"; else echo "✅ HOST secret topildi!"; fi
-          if [ -z "${{ secrets.USERNAME }}" ]; then echo "❌ USERNAME secret BO'SH!"; else echo "✅ USERNAME secret topildi!"; fi
-          if [ -z "${{ secrets.SSH_KEY }}" ]; then echo "❌ SSH_KEY secret BO'SH!"; else echo "✅ SSH_KEY secret topildi!"; fi
-
-          # 1. SSH papkasini yaratish va kalitni joylash
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-
-          # 2. Serverga to'g'ridan-to'g'ri ulanish va skriptni ishga tushirish
-          ssh -o StrictHostKeyChecking=no dev@${{ secrets.HOST }} "cd /var/www/todo && ./deploy.sh"
-
-      # 2. Serverga deploy qilish
-      - name: Deploy to Server
+      - name: Debug and Deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 169.58.30.176
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: 22
+          debug: true # <--- Plaginning barcha ichki ulanish sirlarini fosh qiladi
+          script_stop: true # <--- Agar bitta komanda xato bersa ham jarayonni qizil qilib to'xtatadi
           script: |
+            echo "--- 1. Men kimman va qayerdaman? ---"
+            whoami
+            pwd
+
+            echo "--- 2. Papka ichida nimalar bor? ---"
             cd /var/www/todo
-            ./deploy.sh
+            ls -la
+
+            echo "--- 3. deploy.sh fayli joyidami? ---"
+            cat deploy.sh
+
+            echo "--- 4. Skriptni BASH orqali ishga tushirish ---"
+            bash ./deploy.sh
