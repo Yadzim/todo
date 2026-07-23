@@ -15,7 +15,7 @@ type AuthContextValue = {
   user: User | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
-  register: (email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
 }
 
@@ -45,8 +45,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me)
   }, [])
 
-  const register = useCallback(async (email: string, password: string) => {
-    await authApi.register(email, password)
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    await authApi.register(name, email, password)
     await authApi.login(email, password)
     const me = await authApi.getMe()
     setUser(me)

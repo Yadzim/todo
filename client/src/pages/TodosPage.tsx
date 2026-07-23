@@ -81,7 +81,9 @@ export function TodosPage() {
         </div>
 
         <div className="user-chip">
-          <span className="user-email">{user?.email}</span>
+          <span className="user-email" title={user?.email}>
+            {user?.name || user?.email}
+          </span>
           <button type="button" className="btn-ghost" onClick={logout}>
             Chiqish
           </button>

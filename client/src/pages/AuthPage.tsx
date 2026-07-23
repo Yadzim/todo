@@ -7,6 +7,7 @@ type Mode = 'login' | 'register'
 export function AuthPage() {
   const { login, register } = useAuth()
   const [mode, setMode] = useState<Mode>('login')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -20,7 +21,7 @@ export function AuthPage() {
       if (mode === 'login') {
         await login(email.trim(), password)
       } else {
-        await register(email.trim(), password)
+        await register(name.trim(), email.trim(), password)
       }
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Xatolik yuz berdi')
@@ -77,6 +78,21 @@ export function AuthPage() {
         </div>
 
         <form className="auth-form" onSubmit={handleSubmit}>
+          {mode === 'register' ? (
+            <label>
+              <span>Ism</span>
+              <input
+                type="text"
+                autoComplete="name"
+                required
+                minLength={1}
+                maxLength={100}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Ismingiz"
+              />
+            </label>
+          ) : null}
           <label>
             <span>Email</span>
             <input

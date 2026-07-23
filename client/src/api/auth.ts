@@ -1,10 +1,10 @@
 import { request, setToken } from './client'
 import type { AuthResponse, User } from '../types'
 
-export async function register(email: string, password: string): Promise<User> {
+export async function register(name: string, email: string, password: string): Promise<User> {
   return request<User>('/auth/register', {
     method: 'POST',
-    body: { email, password },
+    body: { name, email, password },
     auth: false,
   })
 }
