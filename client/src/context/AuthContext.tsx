@@ -15,6 +15,8 @@ type AuthContextValue = {
   user: User | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
+  loginWithTelegram: (email: string, code: string) => Promise<void>
+  requestTelegramCode: (email: string) => Promise<string>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
 }
@@ -45,6 +47,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me)
   }, [])
 
+  const requestTelegramCode = useCallback(async (email: string) => {
+    const result = await authApi.requestTelegramLogin(email)
+    return result.message
+  }, [])
+
+  const loginWithTelegram = useCallback(async (email: string, code: string) => {
+    await authApi.verifyTelegramLogin(email, code)
+    const me = await authApi.getMe()
+    setUser(me)
+  }, [])
+
   const register = useCallback(async (name: string, email: string, password: string) => {
     await authApi.register(name, email, password)
     await authApi.login(email, password)
@@ -58,8 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ user, loading, login, register, logout }),
-    [user, loading, login, register, logout],
+    () => ({ user, loading, login, loginWithTelegram, requestTelegramCode, register, logout }),
+    [user, loading, login, loginWithTelegram, requestTelegramCode, register, logout],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

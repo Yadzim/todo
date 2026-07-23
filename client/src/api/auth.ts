@@ -25,6 +25,24 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return data
 }
 
+export async function requestTelegramLogin(email: string): Promise<{ message: string }> {
+  return request<{ message: string }>('/auth/telegram/request', {
+    method: 'POST',
+    body: { email },
+    auth: false,
+  })
+}
+
+export async function verifyTelegramLogin(email: string, code: string): Promise<AuthResponse> {
+  const data = await request<AuthResponse>('/auth/telegram/verify', {
+    method: 'POST',
+    body: { email, code },
+    auth: false,
+  })
+  setToken(data.access_token)
+  return data
+}
+
 export async function getMe(): Promise<User> {
   return request<User>('/auth/me')
 }

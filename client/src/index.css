@@ -136,6 +136,28 @@ a {
   animation: shake 0.35s ease;
 }
 
+.form-info {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: var(--mint-soft);
+  color: var(--teal-deep);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.auth-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.auth-resend {
+  width: 100%;
+  margin-top: -0.25rem;
+}
+
 /* ——— boot ——— */
 
 .boot-screen {
@@ -236,6 +258,10 @@ a {
   margin-bottom: 1.4rem;
   border-radius: 14px;
   background: rgba(12, 31, 28, 0.05);
+}
+
+.auth-tabs-3 {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .auth-tabs button {

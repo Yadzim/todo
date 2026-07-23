@@ -30,3 +30,16 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: int | None = None
+
+
+class TelegramLoginRequest(BaseModel):
+    email: EmailStr
+
+
+class TelegramLoginVerify(BaseModel):
+    email: EmailStr
+    code: str = Field(min_length=4, max_length=8)
+
+
+class TelegramLoginRequestOut(BaseModel):
+    message: str
