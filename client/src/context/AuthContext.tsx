@@ -9,14 +9,16 @@ import {
 } from 'react'
 import * as authApi from '../api/auth'
 import { setToken } from '../api/client'
-import type { User } from '../types'
+import type { TelegramLoginRequestResult, TelegramPairCreateResult, User } from '../types'
 
 type AuthContextValue = {
   user: User | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
   loginWithTelegram: (email: string, code: string) => Promise<void>
-  requestTelegramCode: (email: string) => Promise<string>
+  requestTelegramCode: (email: string) => Promise<TelegramLoginRequestResult>
+  createTelegramPair: () => Promise<TelegramPairCreateResult>
+  pollTelegramPair: (sessionId: string) => Promise<'pending' | 'confirmed' | 'expired' | 'consumed'>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
 }
@@ -48,14 +50,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const requestTelegramCode = useCallback(async (email: string) => {
-    const result = await authApi.requestTelegramLogin(email)
-    return result.message
+    return authApi.requestTelegramLogin(email)
   }, [])
 
   const loginWithTelegram = useCallback(async (email: string, code: string) => {
     await authApi.verifyTelegramLogin(email, code)
     const me = await authApi.getMe()
     setUser(me)
+  }, [])
+
+  const createTelegramPair = useCallback(async () => {
+    return authApi.createTelegramPair()
+  }, [])
+
+  const pollTelegramPair = useCallback(async (sessionId: string) => {
+    const status = await authApi.getTelegramPairStatus(sessionId)
+    if (status.status === 'confirmed' && status.access_token) {
+      setToken(status.access_token)
+      const me = await authApi.getMe()
+      setUser(me)
+    }
+    return status.status
   }, [])
 
   const register = useCallback(async (name: string, email: string, password: string) => {
@@ -71,8 +86,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ user, loading, login, loginWithTelegram, requestTelegramCode, register, logout }),
-    [user, loading, login, loginWithTelegram, requestTelegramCode, register, logout],
+    () => ({
+      user,
+      loading,
+      login,
+      loginWithTelegram,
+      requestTelegramCode,
+      createTelegramPair,
+      pollTelegramPair,
+      register,
+      logout,
+    }),
+    [
+      user,
+      loading,
+      login,
+      loginWithTelegram,
+      requestTelegramCode,
+      createTelegramPair,
+      pollTelegramPair,
+      register,
+      logout,
+    ],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
