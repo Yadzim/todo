@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { AuthPage } from './pages/AuthPage'
+import { RemindersPage } from './pages/RemindersPage'
 import { TodosPage } from './pages/TodosPage'
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -17,7 +18,6 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   }
 
   if (!user) return <Navigate to="/login" replace />
-
   return children
 }
 
@@ -53,6 +53,14 @@ export default function App() {
         element={
           <ProtectedRoute>
             <TodosPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reminders"
+        element={
+          <ProtectedRoute>
+            <RemindersPage />
           </ProtectedRoute>
         }
       />
