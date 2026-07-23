@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import logging
 import re
 from datetime import UTC, datetime
@@ -28,21 +29,39 @@ def deep_link_for_token(token: str) -> str | None:
     return f"https://t.me/{settings.telegram_bot_username.lstrip('@')}?start={token}"
 
 
-async def send_message(chat_id: str, text: str) -> bool:
+def _post_message(chat_id: str, text: str) -> bool:
     if not settings.telegram_bot_token:
         logger.warning("Telegram bot token sozlanmagan")
         return False
 
     url = f"{TELEGRAM_API}/bot{settings.telegram_bot_token}/sendMessage"
-    async with httpx.AsyncClient(timeout=20) as client:
-        response = await client.post(
-            url,
-            json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
-        )
+    try:
+        with httpx.Client(timeout=20) as client:
+            response = client.post(
+                url,
+                json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
+            )
         if response.status_code >= 400:
             logger.error("Telegram xabar yuborilmadi: %s", response.text)
             return False
         return True
+    except Exception:
+        logger.exception("Telegram xabar yuborishda xatolik")
+        return False
+
+
+async def send_message(chat_id: str, text: str) -> bool:
+    return _post_message(chat_id, text)
+
+
+def notify_login(user: User) -> None:
+    if not user.telegram_chat_id:
+        return
+    name = html.escape(user.name)
+    _post_message(
+        user.telegram_chat_id,
+        f"✅ <b>{name}</b>, Focus tizimiga kirdingiz.",
+    )
 
 
 def _extract_start_token(text: str | None) -> str | None:

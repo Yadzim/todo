@@ -23,7 +23,7 @@ from app.schemas.user import (
     UserCreate,
     UserOut,
 )
-from app.services.telegram import bot_configured, send_message
+from app.services.telegram import bot_configured, notify_login, send_message
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -68,6 +68,7 @@ def login(
             detail="Email yoki parol noto'g'ri",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    notify_login(user)
     return Token(access_token=create_access_token(user.id))
 
 
@@ -151,6 +152,7 @@ def verify_telegram_login(
 
     record.used = True
     db.commit()
+    notify_login(user)
     return Token(access_token=create_access_token(user.id))
 
 
@@ -210,9 +212,12 @@ def get_telegram_pair_status(session_id: str, db: Session = Depends(get_db)) -> 
     if not session.user_id:
         return TelegramPairStatusOut(status="pending")
 
+    user = db.get(User, session.user_id)
     token = create_access_token(session.user_id)
     session.consumed = True
     db.commit()
+    if user:
+        notify_login(user)
     return TelegramPairStatusOut(status="confirmed", access_token=token, token_type="bearer")
 
 
