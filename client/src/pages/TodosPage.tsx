@@ -92,7 +92,7 @@ export function TodosPage() {
 
       <main className="workspace">
         <section className="hero-block">
-          <h1>Bugungi reja:</h1>
+          <h1>Bugungi reja</h1>
           <p>
             {stats.left === 0 && stats.total > 0
               ? 'Hammasi bajarildi — ajoyib!'

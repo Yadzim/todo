@@ -34,7 +34,6 @@ function PublicOnly({ children }: { children: ReactNode }) {
   }
 
   if (user) return <Navigate to="/" replace />
-
   return children
 }
 
